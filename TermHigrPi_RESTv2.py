@@ -89,7 +89,7 @@ def salvar_http(date, temperature, humidity, url, api_key):
    except:
       dberror_log(data_atual['timestamp'])
       import subprocess
-      subprocess.run(["wpa_cli", "-i wlan0 reconfigure"])	     
+      subprocess.call("wpa_cli -i wlan0 reconfigure", shell=True)	     
    return
 
 def lcd_config() :
