@@ -1,0 +1,11 @@
+[Unit]
+Description=Thermo Higrometer DHT-22
+
+[Service]
+ExecStart=/home/pi/TermHigrPi-2019/TermHigrPi_REST.py
+WorkingDirectory=/home/pi/TermHigrPi-2019
+User=pi
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

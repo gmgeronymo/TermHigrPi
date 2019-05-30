@@ -1,0 +1,1 @@
+Move datalogger.ini to /boot
