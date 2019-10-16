@@ -176,7 +176,7 @@ if __name__ == "__main__":
       
       if (config['LCDConfig']['enable'] == 'true') :
          lcd.put_line(0, "Temperatura: "+str(temperature)+" C")
-         lce.put_line(1, "Umid: "+str(humidity)+" u.r.  P: "+str(pressure))
+         lcd.put_line(1, "Umid: "+str(humidity)+" u.r.  P: "+str(pressure))
          
 
          if (first_run) :
