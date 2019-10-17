@@ -26,7 +26,7 @@ def data_hora():
 
 def log_txt(ano,data,hora,humidity,temperature):
    with open("logs/log_"+ano+".txt","a",encoding="iso-8859-1",newline="\r\n") as text_file:
-      print("{}\t{}\t{}%\t{}ÂºC".format(data,hora,humidity,temperature), file=text_file)
+      print("{}\t{}\t{}%\t{} ºC".format(data,hora,humidity,temperature), file=text_file)
       text_file.close();
    return
 
@@ -147,14 +147,14 @@ if __name__ == "__main__":
       refresh_lcd = datetime.timedelta(seconds=int(config['LCDConfig']['refresh']))
       INTERVAL_LCD = refresh_lcd.total_seconds()
       INTERVAL_START = (start-now).total_seconds()
-      REP_run = int(INTERVAL // INTERVAL_LCD)  # qtde repetiÃ§Ãµes atÃ© salvar leitura
+      REP_run = int(INTERVAL // INTERVAL_LCD)  # qtde rep ate salvar leitura
       REP_start = int(INTERVAL_START // INTERVAL_LCD) # valor inicial de REP para salvar em horarios 'redondos'
       #lcd = lcd_config()
       lcd = i2c_lcd.lcd(pi, width=16)
       counter = 0
       first_run = True
    else :
-      # aguarda o proximo horario inteiro do intervalo para comeÃ§ar      
+      # aguarda o proximo horario inteiro do intervalo para comecar     
       time.sleep((start-now).total_seconds()) # Overall INTERVAL second polling.
 
    next_reading = time.time()
@@ -164,20 +164,19 @@ if __name__ == "__main__":
       if (config['SensorConfig']['sensor'] == 'DHT22') :
          s.trigger()
          time.sleep(0.2)
-         temperature = round(s.temperature(),1)      
-         humidity = round(s.humidity())
-         pressure = 'N/A';
+         temperature = s.temperature()
+         humidity = s.humidity()
+         pressure = '';
 
       if (config['SensorConfig']['sensor'] == 'BME280') :
-         t, p, h = s.read_data()
-         temperature = round(t,2)      
-         humidity = round(h,1)
-         pressure = round(p/100,1)
+         temperature, pressure, humidity = s.read_data()
       
       if (config['LCDConfig']['enable'] == 'true') :
          lcd.put_line(0, data_atual['hora']+" "+"{0:.2f}".format(temperature)+chr(223)+"C")
-         lcd.put_line(1, "{0:.1f}".format(humidity)+"% "+"{0:.1f}".format(pressure)+" hPa")
-         
+         if (config['SensorConfig']['sensor'] == 'DHT22') :
+            lcd.put_line(1, "{0:.1f}".format(humidity)+"% ")
+        if (config['SensorConfig']['sensor'] == 'BME280') :
+            lcd.put_line(1, "{0:.1f}".format(humidity)+"% "+"{0:.1f}".format(pressure/100)+" hPa")
 
          if (first_run) :
             REP = REP_start + 1
@@ -185,10 +184,10 @@ if __name__ == "__main__":
             REP = REP_run
             
          if (counter == REP) :
-            log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],humidity,temperature)
-            salvar_sqlite(data_atual['timestamp'],str(temperature),str(humidity))
+            log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],"{0:.1f}".format(humidity),"{0:.2f}".format(temperature))
+            salvar_sqlite(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity))
             if (config['HttpConfig']['enable'] == 'true') :
-               salvar_http(data_atual['timestamp'],str(temperature),str(humidity), url, api_key)
+               salvar_http(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity), url, api_key)
             counter = 0
             first_run = False
 
@@ -196,10 +195,10 @@ if __name__ == "__main__":
          next_reading += INTERVAL_LCD
          time.sleep(next_reading-time.time())
       else :
-         log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],humidity,temperature)
-         salvar_sqlite(data_atual['timestamp'],str(temperature),str(humidity))
+         log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],"{0:.1f}".format(humidity),"{0:.2f}".format(temperature))
+         salvar_sqlite(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity))
          if (config['HttpConfig']['enable'] == 'true') :
-            salvar_http(data_atual['timestamp'],str(temperature),str(humidity), url, api_key)           
+            salvar_http(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity), url, api_key)           
          next_reading += INTERVAL
          time.sleep(next_reading-time.time()) # Overall INTERVAL second polling.
 	  
