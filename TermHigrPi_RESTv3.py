@@ -175,8 +175,8 @@ if __name__ == "__main__":
          pressure = round(p,1)
       
       if (config['LCDConfig']['enable'] == 'true') :
-         lcd.put_line(0, data_atual['hora'] + "    "+str(temperature)+" "+chr(223)+"C")
-         lcd.put_line(1, str(humidity)+" %u.r. "+str(pressure)+ "hPa")
+         lcd.put_line(0, data_atual['hora']+" "+str(temperature)+" "+chr(223)+"C")
+         lcd.put_line(1, str(humidity)+" % "+str(pressure)+ "hPa")
          
 
          if (first_run) :
