@@ -175,7 +175,7 @@ if __name__ == "__main__":
          lcd.put_line(0, data_atual['hora']+" "+"{0:.2f}".format(temperature)+chr(223)+"C")
          if (config['SensorConfig']['sensor'] == 'DHT22') :
             lcd.put_line(1, "{0:.1f}".format(humidity)+"% ")
-        if (config['SensorConfig']['sensor'] == 'BME280') :
+         if (config['SensorConfig']['sensor'] == 'BME280') :
             lcd.put_line(1, "{0:.1f}".format(humidity)+"% "+"{0:.1f}".format(pressure/100)+" hPa")
 
          if (first_run) :
