@@ -172,11 +172,11 @@ if __name__ == "__main__":
          t, p, h = s.read_data()
          temperature = round(t,2)      
          humidity = round(h,1)
-         pressure = round(p,1)
+         pressure = round(p/100,1)
       
       if (config['LCDConfig']['enable'] == 'true') :
-         lcd.put_line(0, data_atual['hora']+" "+str(temperature)+" "+chr(223)+"C")
-         lcd.put_line(1, str(humidity)+" % "+str(pressure)+ "hPa")
+         lcd.put_line(0, data_atual['hora']+" "+str(temperature)+chr(223)+"C")
+         lcd.put_line(1, str(humidity)+"% "+str(pressure)+"hPa")
          
 
          if (first_run) :
