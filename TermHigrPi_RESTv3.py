@@ -24,9 +24,9 @@ def data_hora():
    ano = datetime.datetime.strftime(date, '%Y')
    return {'timestamp':timestamp, 'data':data, 'hora':hora, 'ano':ano}
 
-def log_txt(ano,data,hora,humidity,temperature):
+def log_txt(ano,data,hora,humidity,temperature,pressure):
    with open("logs/log_"+ano+".txt","a",encoding="iso-8859-1",newline="\r\n") as text_file:
-      print("{}\t{}\t{}%\t{} ºC".format(data,hora,humidity,temperature), file=text_file)
+      print("{}\t{}\t{}%\t{} ºC\t{} hPa".format(data,hora,humidity,temperature,pressure), file=text_file)
       text_file.close();
    return
 
@@ -38,21 +38,21 @@ def dberror_log(timestamp):
       text_file.close();
    return
 
-def write_buffer(temperature,humidity,timestamp):
+def write_buffer(temperature,humidity,pressure,timestamp):
    with open("write_buffer.txt","a") as csvfile:
       write_buffer = csv.writer(csvfile, delimiter=',',lineterminator='\n')
-      write_buffer.writerow([str(temperature),str(humidity),timestamp])
+      write_buffer.writerow([str(temperature),str(humidity),str(pressure),timestamp])
       csvfile.close();
    return
 
 def open_buffer():
    with open("write_buffer.txt") as csvfile:
-      reader = csv.DictReader(csvfile,delimiter=',',fieldnames=['temperature','humidity','date','certificado','data_certificado'])
+      reader = csv.DictReader(csvfile,delimiter=',',fieldnames=['temperature','humidity','date','pressure'])
       d = list(reader)
       csvfile.close();
    return d
 
-def salvar_sqlite(date,temperature,humidity):
+def salvar_sqlite(date,temperature,humidity,pressure):
    if not (os.path.isfile('logs/log.db')): # se o db nÃ£o existir, criar
       conn = sqlite3.connect('logs/log.db')
       c = conn.cursor()
@@ -61,28 +61,30 @@ def salvar_sqlite(date,temperature,humidity):
 			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 			date TEXT,
 			temperature TEXT,
-			humidity TEXT
+			humidity TEXT,
+			pressure TEXT
       );
       """)
       conn.close()
    conn = sqlite3.connect('logs/log.db')
    cur = conn.cursor()
-   cur.execute("""INSERT INTO condicoes_ambientais (date, temperature, humidity) VALUES (?, ?, ?)""", (date, temperature, humidity))
+   cur.execute("""INSERT INTO condicoes_ambientais (date, temperature, humidity, pressure) VALUES (?, ?, ?)""", (date, temperature, humidity, pressure))
    conn.commit()
    conn.close()
 
    return
 
-def salvar_http(date, temperature, humidity, url, api_key):
+def salvar_http(date, temperature, humidity, pressure url, api_key):
    # escreve no buffer de saida
-   write_buffer(temperature,humidity,date)
+   write_buffer(temperature,humidity,pressure,date)
    try:
       d = open_buffer()
       for leitura in d:
          post_fields = {
            'temperature' : leitura['temperature'],
            'humidity' : leitura['humidity'],
-           'date' : leitura['date']
+           'date' : leitura['date'],
+           'pressure' : leitura['pressure']
          }
          request = Request(url, urlencode(post_fields).encode())
          request.add_header('X-API-KEY', api_key)
@@ -184,10 +186,10 @@ if __name__ == "__main__":
             REP = REP_run
             
          if (counter == REP) :
-            log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],"{0:.1f}".format(humidity),"{0:.2f}".format(temperature))
-            salvar_sqlite(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity))
+            log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],"{0:.1f}".format(humidity),"{0:.2f}".format(temperature),"{0:.1f}".format(pressure))
+            salvar_sqlite(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure))
             if (config['HttpConfig']['enable'] == 'true') :
-               salvar_http(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity), url, api_key)
+               salvar_http(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure), url, api_key)
             counter = 0
             first_run = False
 
@@ -195,10 +197,10 @@ if __name__ == "__main__":
          next_reading += INTERVAL_LCD
          time.sleep(next_reading-time.time())
       else :
-         log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],"{0:.1f}".format(humidity),"{0:.2f}".format(temperature))
-         salvar_sqlite(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity))
+         log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],"{0:.1f}".format(humidity),"{0:.2f}".format(temperature), "{0:.1f}".format(pressure))
+         salvar_sqlite(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure))
          if (config['HttpConfig']['enable'] == 'true') :
-            salvar_http(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity), url, api_key)           
+            salvar_http(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure), url, api_key)           
          next_reading += INTERVAL
          time.sleep(next_reading-time.time()) # Overall INTERVAL second polling.
 	  
