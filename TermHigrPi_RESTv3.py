@@ -74,7 +74,7 @@ def salvar_sqlite(date,temperature,humidity,pressure):
 
    return
 
-def salvar_http(date, temperature, humidity, pressure url, api_key):
+def salvar_http(date, temperature, humidity, pressure, url, api_key):
    # escreve no buffer de saida
    write_buffer(temperature,humidity,pressure,date)
    try:
