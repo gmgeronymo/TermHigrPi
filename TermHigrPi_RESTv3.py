@@ -68,7 +68,7 @@ def salvar_sqlite(date,temperature,humidity,pressure):
       conn.close()
    conn = sqlite3.connect('logs/log.db')
    cur = conn.cursor()
-   cur.execute("""INSERT INTO condicoes_ambientais (date, temperature, humidity, pressure) VALUES (?, ?, ?)""", (date, temperature, humidity, pressure))
+   cur.execute("""INSERT INTO condicoes_ambientais (date, temperature, humidity, pressure) VALUES (?, ?, ?, ?)""", (date, temperature, humidity, pressure))
    conn.commit()
    conn.close()
 
