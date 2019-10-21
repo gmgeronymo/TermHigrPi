@@ -47,13 +47,13 @@ def write_buffer(temperature,humidity,pressure,timestamp):
 
 def open_buffer():
    with open("write_buffer.txt") as csvfile:
-      reader = csv.DictReader(csvfile,delimiter=',',fieldnames=['temperature','humidity','date','pressure'])
+      reader = csv.DictReader(csvfile,delimiter=',',fieldnames=['temperature','humidity','pressure','date'])
       d = list(reader)
       csvfile.close();
    return d
 
 def salvar_sqlite(date,temperature,humidity,pressure):
-   if not (os.path.isfile('logs/log.db')): # se o db nÃ£o existir, criar
+   if not (os.path.isfile('logs/log.db')): # se o db nao existir, criar
       conn = sqlite3.connect('logs/log.db')
       c = conn.cursor()
       c.execute("""DROP TABLE IF EXISTS condicoes_ambientais""")
@@ -186,10 +186,10 @@ if __name__ == "__main__":
             REP = REP_run
             
          if (counter == REP) :
-            log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],"{0:.1f}".format(humidity),"{0:.2f}".format(temperature),"{0:.1f}".format(pressure))
-            salvar_sqlite(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure))
+            log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],"{0:.1f}".format(humidity),"{0:.2f}".format(temperature),"{0:.1f}".format(pressure/100))
+            salvar_sqlite(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure/100))
             if (config['HttpConfig']['enable'] == 'true') :
-               salvar_http(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure), url, api_key)
+               salvar_http(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure/100), url, api_key)
             counter = 0
             first_run = False
 
@@ -197,10 +197,10 @@ if __name__ == "__main__":
          next_reading += INTERVAL_LCD
          time.sleep(next_reading-time.time())
       else :
-         log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],"{0:.1f}".format(humidity),"{0:.2f}".format(temperature), "{0:.1f}".format(pressure))
-         salvar_sqlite(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure))
+         log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],"{0:.1f}".format(humidity),"{0:.2f}".format(temperature), "{0:.1f}".format(pressure/100))
+         salvar_sqlite(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure/100))
          if (config['HttpConfig']['enable'] == 'true') :
-            salvar_http(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure), url, api_key)           
+            salvar_http(data_atual['timestamp'],"{0:.2f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure/100), url, api_key)           
          next_reading += INTERVAL
          time.sleep(next_reading-time.time()) # Overall INTERVAL second polling.
 	  
