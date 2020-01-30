@@ -93,9 +93,9 @@ def salvar_http(date, temperature, humidity, pressure, url, api_key):
          # apaga o buffer
          open('write_buffer.txt','w').close()
    except:
-      dberror_log(data_atual['timestamp'])
-      import subprocess
-      subprocess.call("wpa_cli -i wlan0 reconfigure", shell=True)	     
+      dberror_log(date)
+#      import subprocess
+#      subprocess.call("wpa_cli -i wlan0 reconfigure", shell=True)	     
    return
 
 if __name__ == "__main__":
@@ -204,6 +204,9 @@ if __name__ == "__main__":
          next_reading += INTERVAL
          time.sleep(next_reading-time.time()) # Overall INTERVAL second polling.
 	  
+   if (lcd) :
+       lcd.close()
+	
    s.cancel()
    pi.stop()
 
