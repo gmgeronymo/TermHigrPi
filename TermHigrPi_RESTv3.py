@@ -77,6 +77,11 @@ def salvar_sqlite(date,temperature,humidity,pressure):
 def salvar_http(date, temperature, humidity, pressure, url, api_key):
    # escreve no buffer de saida
    write_buffer(temperature,humidity,pressure,date)
+   # verifica se o servidor esta online
+   # string url: http://lampe-server/datalogger/...
+   # url.split('/')[2] = lampe_server
+   HOST_UP  = True if os.system("ping -c 1 " + url.split('/')[2] + "> /dev/null 2>&1") is 0 else False
+
    try:
       d = open_buffer()
       for leitura in d:
@@ -86,16 +91,15 @@ def salvar_http(date, temperature, humidity, pressure, url, api_key):
            'date' : leitura['date'],
            'pressure' : leitura['pressure']
          }
-         request = Request(url, urlencode(post_fields).encode())
-         request.add_header('X-API-KEY', api_key)
-         # tenta enviar os dados via http 
-         json = urlopen(request).read().decode()
-         # apaga o buffer
-         open('write_buffer.txt','w').close()
+         if (HOST_UP) :
+             request = Request(url, urlencode(post_fields).encode())
+             request.add_header('X-API-KEY', api_key)
+             # tenta enviar os dados via http 
+             json = urlopen(request).read().decode()
+             # apaga o buffer
+             open('write_buffer.txt','w').close()
    except:
       dberror_log(date)
-#      import subprocess
-#      subprocess.call("wpa_cli -i wlan0 reconfigure", shell=True)	     
    return
 
 if __name__ == "__main__":
@@ -107,7 +111,8 @@ if __name__ == "__main__":
    import configparser 	# ler arquivo de configuracao
    import csv          	# salvar dados antes de enviar ao DB
    import sqlite3      	# banco de dados local
-   import os.path
+   import os
+   #import os.path
    from urllib.parse import urlencode
    from urllib.request import Request, urlopen  # requests http
 
