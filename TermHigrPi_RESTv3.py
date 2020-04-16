@@ -80,8 +80,8 @@ def salvar_http(date, temperature, humidity, pressure, url, api_key):
    # verifica se o servidor esta online
    # string url: http://lampe-server/datalogger/...
    # url.split('/')[2] = lampe_server
-   HOST_UP  = True if os.system("ping -c 1 " + url.split('/')[2] + "> /dev/null 2>&1") is 0 else False
-
+#   HOST_UP  = True if os.system("ping -c 1 " + url.split('/')[2] + "> /dev/null 2>&1") is 0 else False
+   HOST_UP = True
    try:
       d = open_buffer()
       for leitura in d:
