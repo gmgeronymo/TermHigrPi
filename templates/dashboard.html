@@ -48,35 +48,38 @@
 		<div class="card-deck text-center">
 		    
 		    <div class="row mt-2 mx-auto" id="card_temperature">
-			<div class="card shadow-sm bg-light">
+			<div class="card shadow-sm bg-light" style="width: 18rem;">
 			    <div class="card-header"> Temperatura </div>
 			    <div class="card-body">
 				<h1> <i class="fas fa-thermometer-half"></i> {{ temp }} ºC </h1>
-				<h4> Data da última medição: </h4>
-				<h4> {{ date }} </h4>
 			    </div>
 			</div>
 		    </div>
 
 
 		    <div class="row mt-2 mx-auto" id="card_humidity">
-			<div class="card shadow-sm bg-light">
+			<div class="card shadow-sm bg-light" style="width: 18rem;">
 			    <div class="card-header"> Umidade Relativa </div>
 			    <div class="card-body">
 				<h1> <i class="fas fa-cloud-rain"></i> {{ hum }} % u.r. </h1>
-				<h4> Data da última medição: </h4>
-				<h4> {{ date }} </h4>
 			    </div>
 			</div>
 		    </div>
 
 		    <div class="row mt-2 mx-auto" id="card_pressure">
-			<div class="card shadow-sm bg-light">
+			<div class="card shadow-sm bg-light" style="width: 18rem;">
 			    <div class="card-header"> Pressão Atmosférica </div>
 			    <div class="card-body">
 				<h1> <i class="fas fa-tachometer-alt"></i> {{ press }} hPa </h1>
-				<h4> Data da última medição: </h4>
-				<h4> {{ date }} </h4>
+			    </div>
+			</div>
+		    </div>
+
+		    <div class="row mt-2 mx-auto" id="card_pressure">
+			<div class="card shadow-sm bg-light" style="width: 18rem;">
+			    <div class="card-header"> Última medição </div>
+			    <div class="card-body">
+				<h4> <i class="fas fa-clock"></i> {{ date }}  </h4>
 			    </div>
 			</div>
 		    </div>
