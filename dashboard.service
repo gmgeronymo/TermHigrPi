@@ -1,8 +1,8 @@
 [Unit]
-Description=Thermo Higrometer DHT-22 - BME280
+Description=Dashboard for TermHigrPi
 
 [Service]
-ExecStart=/home/pi/termhigrpirest/TermHigrPi.py
+ExecStart=/home/pi/termhigrpirest/dashboard.py
 WorkingDirectory=/home/pi/termhigrpirest
 User=pi
 Restart=on-failure
