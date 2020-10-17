@@ -11,6 +11,7 @@ import json
 import sqlite3
 from sqlite3 import Error
 from datetime import datetime
+import pandas as pd
 
 def create_connection(db_file):
     conn = None
@@ -27,24 +28,18 @@ def select_last_row(conn):
     return cur.fetchall();
 
 def select_all_data(conn):
-    cur = conn.cursor()
-    cur.execute("SELECT date, temperature, humidity, pressure FROM condicoes_ambientais")
-    #r = [dict((cur.description[i][0], value) for i, value in enumerate(row)) for row in cur.fetchall()] 
-    return cur.fetchall();
-    
-#    return (r[0] if r else None) if one else r
+    query =  "SELECT date, temperature, humidity, pressure FROM condicoes_ambientais"
+    df = pd.read_sql_query(query,conn,parse_dates={'date':'%Y-%m-%d %H:%M:%S'},index_col='date')
+    return df.resample('1D').last()
 
 def select_last_24h_data(conn):
-    cur = conn.cursor()
-    # 27 hrs -> 24 hrs + 3 hrs (GMT-3)
-    cur.execute("SELECT date, temperature, humidity, pressure FROM condicoes_ambientais WHERE date >= datetime('now', '-27 hours') AND date < datetime('now')")
-    return cur.fetchall();
+    query = "SELECT date, temperature, humidity, pressure FROM condicoes_ambientais WHERE date >= datetime('now', '-27 hours') AND date < datetime('now')"
+    return pd.read_sql_query(query,conn,parse_dates={'date':'%Y-%m-%d %H:%M:%S'},index_col='date')
 
 def select_last_month_data(conn):
-    cur = conn.cursor()
-    # 27 hrs -> 24 hrs + 3 hrs (GMT-3)
-    cur.execute("SELECT date, temperature, humidity, pressure FROM condicoes_ambientais WHERE date >= datetime('now', '-1 month') AND date < datetime('now')")
-    return cur.fetchall();
+    query = "SELECT date, temperature, humidity, pressure FROM condicoes_ambientais WHERE date >= datetime('now', '-1 month') AND date < datetime('now')" 
+    df = pd.read_sql_query(query,conn,parse_dates={'date':'%Y-%m-%d %H:%M:%S'},index_col='date')
+    return df.resample('120Min').last()
 
 app = Flask(__name__)
 
@@ -71,12 +66,12 @@ def grafico_24h():
 
     conn = create_connection(database)
     with conn:
-        my_query = select_last_24h_data(conn)
-        ca_labels = [item[0] for item in my_query]
-        ca_temp = [item[1] for item in my_query]
-        ca_hum = [item[2] for item in my_query]
-        ca_press = [item[3] for item in my_query]
-    
+        df = select_last_24h_data(conn)
+        ca_labels = df.index.strftime('%d/%m/%Y %H:%M:%S').tolist()
+        ca_temp = df['temperature'].tolist()
+        ca_hum = df['humidity'].tolist()
+        ca_press = df['pressure'].tolist()
+
     return render_template('multiple_chart.html', labels=ca_labels, temp=ca_temp, hum=ca_hum, press=ca_press)
 
 @app.route('/grafico_month')
@@ -85,11 +80,11 @@ def grafico_month():
 
     conn = create_connection(database)
     with conn:
-        my_query = select_last_month_data(conn)
-        ca_labels = [item[0] for item in my_query]
-        ca_temp = [item[1] for item in my_query]
-        ca_hum = [item[2] for item in my_query]
-        ca_press = [item[3] for item in my_query]
+        df = select_last_month_data(conn)
+        ca_labels = df.index.strftime('%d/%m/%Y %H:%M:%S').tolist()
+        ca_temp = df['temperature'].tolist()
+        ca_hum = df['humidity'].tolist()
+        ca_press = df['pressure'].tolist()
     
     return render_template('multiple_chart.html', labels=ca_labels, temp=ca_temp, hum=ca_hum, press=ca_press)
 
@@ -99,11 +94,11 @@ def grafico_all():
 
     conn = create_connection(database)
     with conn:
-        my_query = select_all_data(conn)
-        ca_labels = [item[0] for item in my_query]
-        ca_temp = [item[1] for item in my_query]
-        ca_hum = [item[2] for item in my_query]
-        ca_press = [item[3] for item in my_query]
+        df = select_all_data(conn)
+        ca_labels = df.index.strftime('%d/%m/%Y %H:%M:%S').tolist()
+        ca_temp = df['temperature'].tolist()
+        ca_hum = df['humidity'].tolist()
+        ca_press = df['pressure'].tolist()
     
     return render_template('multiple_chart.html', labels=ca_labels, temp=ca_temp, hum=ca_hum, press=ca_press)
 
