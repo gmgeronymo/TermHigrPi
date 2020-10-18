@@ -30,7 +30,8 @@ def select_last_row(conn):
 def select_all_data(conn):
     query =  "SELECT date, temperature, humidity, pressure FROM condicoes_ambientais"
     df = pd.read_sql_query(query,conn,parse_dates={'date':'%Y-%m-%d %H:%M:%S'},index_col='date')
-    return df.resample('1D').last()
+    df[['temperature','humidity','pressure']] = df[['temperature','humidity','pressure']].apply(pd.to_numeric)   
+    return df.resample('1D', how='mean')
 
 def select_last_24h_data(conn):
     query = "SELECT date, temperature, humidity, pressure FROM condicoes_ambientais WHERE date >= datetime('now', '-27 hours') AND date < datetime('now')"
@@ -39,7 +40,8 @@ def select_last_24h_data(conn):
 def select_last_month_data(conn):
     query = "SELECT date, temperature, humidity, pressure FROM condicoes_ambientais WHERE date >= datetime('now', '-1 month') AND date < datetime('now')" 
     df = pd.read_sql_query(query,conn,parse_dates={'date':'%Y-%m-%d %H:%M:%S'},index_col='date')
-    return df.resample('120Min').last()
+    df[['temperature','humidity','pressure']] = df[['temperature','humidity','pressure']].apply(pd.to_numeric)   
+    return df.resample('120Min', how='mean')
 
 app = Flask(__name__)
 
