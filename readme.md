@@ -8,7 +8,7 @@ A chart of the temperature and humidity across time is presented in a web interf
 On a stock Raspian image, install the following dependencies:
 
 ```
-# apt install pigpio python3-pigpio python3-sqlite3 python3-flask git 
+# apt install pigpio python3-pigpio python3-flask git 
 ```
 
 Enable the pigpio service
