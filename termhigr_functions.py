@@ -1,5 +1,5 @@
+#!/usr/bin/python3
 # funcoes comuns aos programas do termo higrometro
-
 def ceil_dt(dt, delta):
     return dt + (datetime.datetime.min - dt) % delta
 
@@ -40,10 +40,10 @@ def corr_umid(cal):
 # parametro pressure eh opcional
 def log_txt(ano,data,hora,humidity,temperature,pressure=None):
     with open("logs/log_"+ano+".txt","a",encoding="iso-8859-1",newline="\r\n") as text_file:
-    if (pressure) :
-        print("{}\t{}\t{}%\t{} ºC\t{} hPa".format(data,hora,humidity,temperature,pressure), file=text_file)
-    else :
-        print("{}\t{}\t{}%\t{} ºC".format(data,hora,humidity,temperature), file=text_file)
+        if (pressure) :
+            print("{}\t{}\t{}%\t{} ºC\t{} hPa".format(data,hora,humidity,temperature,pressure), file=text_file)
+        else :
+            print("{}\t{}\t{}%\t{} ºC".format(data,hora,humidity,temperature), file=text_file)
         text_file.close();
     return
 

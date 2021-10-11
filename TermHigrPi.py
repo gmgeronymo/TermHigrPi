@@ -13,18 +13,22 @@
 # Suporte a sensor BME280 via i2c
 # Suporte a display LCD via i2c
 
+import time
+import datetime
 import configparser 	# ler arquivo de configuracao
-import termhigr_functions       # funcoes auxiliares
+from termhigr_functions import *       # funcoes auxiliares
 
 # o arquivo config.ini reune as configuracoes que podem ser alteradas
 config = configparser.ConfigParser()    # iniciar o objeto config
 config.read('/boot/datalogger.ini')             # ler o arquivo de configuracao     
 
 if (config['SensorConfig']['sensor'] == 'hygropalm') :
-    import hygropalm_serial
+    import serial
+    from hygropalm_serial import query_serial
 
 elif (config['SensorConfig']['sensor'] == 'sato') :
-    import sato_serial
+    import serial
+    from sato_serial import query_serial
 
 else :
     import pigpio		# acesso a interface GPIO
@@ -43,9 +47,6 @@ else :
         import BME280
         s = BME280.sensor(pi)
 
-import time
-import datetime     	# funcoes de data e hora
-import configparser 	# ler arquivo de configuracao
 import csv          	# salvar dados antes de enviar ao DB
 import sqlite3      	# banco de dados local
 import os

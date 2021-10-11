@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-import serial
-
 def query_serial(serialconfig):
     # configuracao da conexao serial
     # adaptado para termohigrometro SATO

@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-import serial
-
 def query_serial(serialconfig):
     # configuracao da conexao serial
     # seguindo informacoes do manual do fabricante
