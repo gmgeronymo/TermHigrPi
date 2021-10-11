@@ -144,6 +144,66 @@ def salvar_http(date, temperature, humidity, pressure, cal, url, api_key):
         dberror_log(date)
     return
 
+def query_sato(serialconfig):
+    # configuracao da conexao serial
+    # adaptado para termohigrometro SATO
+    ser = serial.Serial(
+        port=serialconfig['port'],
+        baudrate=19200,
+        parity=serial.PARITY_EVEN,
+        stopbits=serial.STOPBITS_ONE,
+        bytesize=serial.SEVENBITS,
+        timeout = int(serialconfig['timeout'])
+    )
+
+    # le uma linha do termohigrometro
+    rcv_str = ser.readline()
+    # fecha a conexao serial
+    ser.close()
+
+    # transformar o byte object recebido em uma string
+    dec_str = rcv_str.decode('utf-8')
+    # processa a string para extrair os valores de temperatura e umidade
+    data = dec_str.split()
+    temperature = float(data[1].replace(',',''))/10
+    humidity = float(data[2])/10
+    
+    data_array = [str(humidity), str(temperature)]
+    return data_array
+
+def query_hygropalm(serialconfig):
+    # configuracao da conexao serial
+    # seguindo informacoes do manual do fabricante
+    ser = serial.Serial(
+        port=serialconfig['port'],
+        baudrate=19200,
+        parity=serial.PARITY_EVEN,
+        stopbits=serial.STOPBITS_ONE,
+        bytesize=serial.SEVENBITS,
+        timeout = int(serialconfig['timeout'])
+    )
+
+    querystring = serialconfig['querystring']
+    # envia para o termohigrometro a query string com o terminador de linha \r
+    #ser.write(b'{u00RDD}\r')
+    ser.write((querystring+'\r').encode())
+
+    # le a resposta do termohigrometro
+    rcv_str = ser.read(50)
+    # fecha a conexao serial
+    ser.close()
+
+    # transformar o byte object recebido em uma string
+    dec_str = rcv_str.decode('utf-8')
+    # processa a string para extrair os valores de temperatura e umidade
+    # o termohigrometro retorna uma string do tipo:
+    # '{u00RDD 0071.68;0022.78;----.--;----.--;#6\r'
+    # o comando abaixo remove o trecho
+    # '{u00RDD '
+    # Assim, e possivel separar temperatura e umidade utilizando ';'
+    data_array = (dec_str.replace(querystring.replace('}',' '),'')).split(';')
+    # arredonda a temperatura e umidade para uma casa decimal
+    return data_array
 
 if __name__ == "__main__":
 
@@ -162,11 +222,9 @@ if __name__ == "__main__":
 
     if (config['SensorConfig']['sensor'] == 'hygropalm') :
         import serial
-        from hygropalm_serial import query_serial
 
     elif (config['SensorConfig']['sensor'] == 'sato') :
         import serial
-        from sato_serial import query_serial
 
     else :
         import pigpio		# acesso a interface GPIO
@@ -229,7 +287,11 @@ if __name__ == "__main__":
         elif (config['SensorConfig']['sensor'] == 'BME280') :
             temperature, pressure, humidity = s.read_data()
         else :                  # sensors comerciais interface serial
-            data_array = query_serial(config['SerialConfig'])
+            if (config['SensorConfig']['sensor'] == 'sato') :
+                data_array = query_sato(config['SerialConfig'])
+            else :
+                data_array = query_hygropalm(config['SerialConfig'])
+                
             temperature = float(data_array[1])
             humidity = float(data_array[0])
 
