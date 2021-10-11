@@ -17,7 +17,7 @@ def ceil_dt(dt, delta):
     return dt + (datetime.datetime.min - dt) % delta
 
 def data_hora():
-    date = datetime.datetime.now();
+    date = datetime.datetime.now()
     timestamp = datetime.datetime.strftime(date, '%Y-%m-%d %H:%M:%S')
     data = datetime.datetime.strftime(date, '%d/%m/%Y')
     hora = datetime.datetime.strftime(date, '%H:%M:%S')
@@ -57,7 +57,7 @@ def log_txt(ano,data,hora,humidity,temperature,pressure=None):
             print("{}\t{}\t{}%\t{} ºC\t{} hPa".format(data,hora,humidity,temperature,pressure), file=text_file)
         else :
             print("{}\t{}\t{}%\t{} ºC".format(data,hora,humidity,temperature), file=text_file)
-        text_file.close();
+        text_file.close()
     return
 
 def dberror_log(timestamp):
@@ -65,21 +65,21 @@ def dberror_log(timestamp):
     with open("logs/dberror.log","a") as text_file:
         print("{}   Erro ao conectar com o banco de dados \n".format(timestamp), file=text_file)
         traceback.print_exc(file=text_file)
-        text_file.close();
+        text_file.close()
     return
 
 def write_buffer(timestamp,temperature,humidity,pressure,certificado,data_certificado):
     with open("write_buffer.txt","a") as csvfile:
         write_buffer = csv.writer(csvfile, delimiter=',',lineterminator='\n')
         write_buffer.writerow([timestamp,str(temperature),str(humidity),str(pressure),certificado,data_certificado])
-        csvfile.close();
+        csvfile.close()
     return
 
 def open_buffer():
     with open("write_buffer.txt") as csvfile:
         reader = csv.DictReader(csvfile,delimiter=',',fieldnames=['date','temperature','humidity','pressure','certificado','data_certificado'])
         d = list(reader)
-        csvfile.close();
+        csvfile.close()
     return d
 
 def salvar_sqlite(date,temperature,humidity,pressure=None):
@@ -282,10 +282,12 @@ if __name__ == "__main__":
             time.sleep(0.2)
             temperature = s.temperature()
             humidity = s.humidity()
-            pressure = '';
+            pressure = None
 
         elif (config['SensorConfig']['sensor'] == 'BME280') :
             temperature, pressure, humidity = s.read_data()
+            # ajusta valor da pressap pra kPa
+            pressure = pressure/100
         else :                  # sensors comerciais interface serial
             if (config['SensorConfig']['sensor'] == 'sato') :
                 data_array = query_sato(config['SerialConfig'])
@@ -294,6 +296,7 @@ if __name__ == "__main__":
                 
             temperature = float(data_array[1])
             humidity = float(data_array[0])
+            pressure = None
 
         
         # verificar se correcoes devem ser aplicadas
@@ -324,7 +327,7 @@ if __name__ == "__main__":
             if (config['SensorConfig']['sensor'] == 'DHT22') :
                 lcd.put_line(1, "{0:.1f}".format(humidity)+"% ")
             if (config['SensorConfig']['sensor'] == 'BME280') :
-                lcd.put_line(1, "{0:.1f}".format(humidity)+"% "+"{0:.1f}".format(pressure/100)+" hPa")
+                lcd.put_line(1, "{0:.1f}".format(humidity)+"% "+"{0:.1f}".format(pressure)+" hPa")
 
             if (first_run) :
                 REP = REP_start + 1
@@ -332,14 +335,25 @@ if __name__ == "__main__":
                 REP = REP_run
             
             if (counter == REP) :
-                log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],"{0:.1f}".format(humidity),"{0:.1f}".format(temperature),"{0:.1f}".format(pressure/100))
-                salvar_sqlite(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure/100))
+                if (config['SensorConfig']['sensor'] == 'BME280') : # soh BME280 registra pressao
+                    log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],"{0:.1f}".format(humidity),"{0:.1f}".format(temperature),"{0:.1f}".format(pressure))
+                    salvar_sqlite(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure))
+                else :
+                    log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],"{0:.1f}".format(humidity),"{0:.1f}".format(temperature))
+                    salvar_sqlite(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity))    
+
                 if (config['HttpConfig']['enable'] == 'true') :
                     # se correcoes forem aplicadas, salvar dados do certificado de calibracao
                     if (config['CalConfig']['enable'] == 'true') :
-                        salvar_http(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure/100), cal, url, api_key)
+                        if (config['SensorConfig']['sensor'] == 'BME280') : # soh BME280 registra pressao
+                            salvar_http(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure), cal, url, api_key)
+                        else :
+                            salvar_http(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity), None, cal, url, api_key)
                     else :
-                        salvar_http(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure/100), None, url, api_key)
+                        if (config['SensorConfig']['sensor'] == 'BME280') : # soh BME280 registra pressao
+                            salvar_http(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure), None, url, api_key)
+                        else :
+                            salvar_http(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity), None, None, url, api_key)
                 counter = 0
                 first_run = False
 
@@ -348,13 +362,24 @@ if __name__ == "__main__":
             time.sleep(next_reading-time.time())
             # sem LCD
         else :
-            log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],"{0:.1f}".format(humidity),"{0:.1f}".format(temperature), "{0:.1f}".format(pressure/100))
-            salvar_sqlite(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure/100))
+            if (config['SensorConfig']['sensor'] == 'BME280') : # soh BME280 registra pressao
+                log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],"{0:.1f}".format(humidity),"{0:.1f}".format(temperature), "{0:.1f}".format(pressure))
+                salvar_sqlite(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure))
+            else :
+                log_txt(data_atual['ano'],data_atual['data'],data_atual['hora'],"{0:.1f}".format(humidity),"{0:.1f}".format(temperature))
+                salvar_sqlite(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity))
+                
             if (config['HttpConfig']['enable'] == 'true') :
                 if (config['CalConfig']['enable'] == 'true') :
-                    salvar_http(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure/100), cal, url, api_key)
+                    if (config['SensorConfig']['sensor'] == 'BME280') : # soh BME280 registra pressao
+                        salvar_http(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure), cal, url, api_key)
+                    else :
+                        salvar_http(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity), None, cal, url, api_key)
                 else :
-                    salvar_http(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure/100), None, url, api_key)
+                    if (config['SensorConfig']['sensor'] == 'BME280') : # soh BME280 registra pressao
+                        salvar_http(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity), "{0:.1f}".format(pressure), None, url, api_key)
+                    else :
+                        salvar_http(data_atual['timestamp'],"{0:.1f}".format(temperature),"{0:.1f}".format(humidity), None, None, url, api_key)
                
             next_reading += INTERVAL
             time.sleep(next_reading-time.time()) # Overall INTERVAL second polling.
