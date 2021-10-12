@@ -8,10 +8,28 @@ A chart of the temperature and humidity across time is presented in a web interf
 On a stock Raspian image, install the following dependencies:
 
 ```
-# apt install pigpio python3-pigpio python3-flask python3-serial python3-numpy python3-pandas git 
+# apt install python3-flask python3-pandas git 
 ```
 
-Enable the pigpio service
+For sensors DHT22 and BME280, install pigpio:
+
+```
+# apt install pigpio python3-pigpio 
+```
+
+For Rotronic Hygropalm 2 or Sato SK-L200TH, install pyserial:
+
+```
+# apt install python3-serial 
+```
+
+To use calibration certificate corrections, install numpy:
+
+```
+# apt install python3-numpy 
+```
+
+If you plan to use DHT22 or BM280, enable the pigpio service:
 ```
 # systemctl enable pigpiod
 # systemctl start pigpiod
@@ -27,9 +45,16 @@ $ git clone https://github.com/gmgeronymo/TermHigrPi.git
 Install the systemd script
 
 ```
-# cp TermHigrPi.service /etc/systemd/system/
-# cp dashboard.service /etc/systemd/system/
+# cp *.service /etc/systemd/system/
 ```
+
+Copy the configuration files to /boot :
+
+```
+# cp config/*.ini /boot/
+```
+
+Adjust the settings in /boot/datalogger.ini. If you plan to use calibration certificate corrections, put the information in /boot/cal.ini.
 
 Enable the systemd service to run on boot
 
