@@ -83,8 +83,6 @@ def open_buffer():
     return d
 
 def salvar_sqlite(date,temperature,humidity,pressure=None):
-    if not (pressure) :
-        pressure = ''
     
     if not (os.path.isfile('logs/log.db')): # se o db nao existir, criar
         conn = sqlite3.connect('logs/log.db')
@@ -99,11 +97,17 @@ def salvar_sqlite(date,temperature,humidity,pressure=None):
         );
         """)
         conn.close()
-        conn = sqlite3.connect('logs/log.db')
-        cur = conn.cursor()
+    
+    conn = sqlite3.connect('logs/log.db')
+    cur = conn.cursor()
+    
+    if (pressure) :
         cur.execute("""INSERT INTO condicoes_ambientais (date, temperature, humidity, pressure) VALUES (?, ?, ?, ?)""", (date, temperature, humidity, pressure))
-        conn.commit()
-        conn.close()
+    else :
+        cur.execute("""INSERT INTO condicoes_ambientais (date, temperature, humidity) VALUES (?, ?, ?)""", (date, temperature, humidity))
+
+    conn.commit()
+    conn.close()
 
     return
 
