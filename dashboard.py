@@ -12,6 +12,17 @@ import sqlite3
 from sqlite3 import Error
 from datetime import datetime
 import pandas as pd
+import configparser
+
+config = configparser.ConfigParser()
+config.read('/boot/datalogger.ini')
+
+# determina se existem dados sobre pressao atmosferica
+if (config['SensorConfig']['sensor'] == 'BME280') :
+    pressure_flag = True
+else :
+    pressure_flag = False
+
 
 def create_connection(db_file):
     conn = None
@@ -57,12 +68,15 @@ def index():
         strDate = my_query[0][0];
         temperature = my_query[0][1].replace('.',',');
         humidity = my_query[0][2].replace('.',',');
-        pressure = my_query[0][3].replace('.',',');
+        if (my_query[0][3]) :
+            pressure = my_query[0][3].replace('.',',')
+        else :
+            pressure = None
         
     objDate = datetime.strptime(strDate, '%Y-%m-%d %H:%M:%S')
     meas_date = datetime.strftime(objDate,'%d/%m/%Y %H:%M:%S')
     
-    return render_template('dashboard.html', date=meas_date, temp=temperature, hum=humidity, press=pressure)
+    return render_template('dashboard.html', date=meas_date, temp=temperature, hum=humidity, press=pressure, flag=pressure_flag)
 
 @app.route('/grafico_24h')
 def grafico_24h():
@@ -75,8 +89,7 @@ def grafico_24h():
         ca_temp = df['temperature'].tolist()
         ca_hum = df['humidity'].tolist()
         ca_press = df['pressure'].tolist()
-
-    return render_template('multiple_chart.html', labels=ca_labels, temp=ca_temp, hum=ca_hum, press=ca_press)
+    return render_template('multiple_chart.html', labels=ca_labels, temp=ca_temp, hum=ca_hum, press=ca_press, flag=pressure_flag)
 
 @app.route('/grafico_month')
 def grafico_month():
@@ -99,7 +112,7 @@ def grafico_month():
         ca_hum_max = df['humidity']['max'].tolist()
         ca_press_max = df['pressure']['max'].tolist()
         
-    return render_template('multiple_chart_maxmin.html', labels=ca_labels, temp=ca_temp, hum=ca_hum, press=ca_press, temp_min=ca_temp_min, hum_min=ca_hum_min, press_min=ca_press_min, temp_max=ca_temp_max, hum_max=ca_hum_max, press_max=ca_press_max)
+    return render_template('multiple_chart_maxmin.html', labels=ca_labels, temp=ca_temp, hum=ca_hum, press=ca_press, temp_min=ca_temp_min, hum_min=ca_hum_min, press_min=ca_press_min, temp_max=ca_temp_max, hum_max=ca_hum_max, press_max=ca_press_max, flag=pressure_flag)
 
 @app.route('/grafico_all')
 def grafico_all():
@@ -122,7 +135,7 @@ def grafico_all():
         ca_hum_max = df['humidity']['max'].tolist()
         ca_press_max = df['pressure']['max'].tolist()
     
-    return render_template('multiple_chart_maxmin.html', labels=ca_labels, temp=ca_temp, hum=ca_hum, press=ca_press, temp_min=ca_temp_min, hum_min=ca_hum_min, press_min=ca_press_min, temp_max=ca_temp_max, hum_max=ca_hum_max, press_max=ca_press_max)
+    return render_template('multiple_chart_maxmin.html', labels=ca_labels, temp=ca_temp, hum=ca_hum, press=ca_press, temp_min=ca_temp_min, hum_min=ca_hum_min, press_min=ca_press_min, temp_max=ca_temp_max, hum_max=ca_hum_max, press_max=ca_press_max, flag=pressure_flag)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
