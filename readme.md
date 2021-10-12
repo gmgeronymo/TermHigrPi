@@ -8,18 +8,19 @@ A chart of the temperature and humidity across time is presented in a web interf
 On a stock Raspian image, install the following dependencies:
 
 ```
-# apt install pigpio python3-pigpio python3-flask python3-serial python3-numpy git 
+# apt install pigpio python3-pigpio python3-flask python3-serial python3-numpy python3-pandas git 
 ```
 
 Enable the pigpio service
 ```
 # systemctl enable pigpiod
+# systemctl start pigpiod
 ```
 
 Download TermHighPi:
 
 ```
-# git clone https://github.com/gmgeronymo/TermHigrPi.git
+$ git clone https://github.com/gmgeronymo/TermHigrPi.git
 # cd TermHigrPi/
 ```
 
@@ -35,10 +36,11 @@ Enable the systemd service to run on boot
 ```
 # systemctl enable TermHigrPi.service
 # systemctl enable dashboard.service
+# systemctl start TermHigrPi.service
+# systemctl start dashboard.service
 ```
 
 The hostname can be modified on /etc/hostname.
 
 By default, browse to http://raspberrypi:8080 to see the temperature and humidity chart.
 
-Reboot to complete the installation!
