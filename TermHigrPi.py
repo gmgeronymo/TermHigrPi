@@ -114,11 +114,11 @@ def salvar_http(date, temperature, humidity, pressure, cal, url, api_key):
         certificado = cal['Certificado']['certificado']
         data_certificado = cal['Certificado']['data']
     else :
-        certificado = ''
-        data_certificado = ''
+        certificado = '' 
+        data_certificado = '' 
 
-    if not (humidity) :
-        humidity = ''
+    if not (pressure) :
+        pressure = ''
         
     # escreve no buffer de saida
     write_buffer(date,temperature,humidity,pressure,certificado,data_certificado)
@@ -126,13 +126,28 @@ def salvar_http(date, temperature, humidity, pressure, cal, url, api_key):
     try:
         d = open_buffer()
         for leitura in d:
+            if (leitura['pressure'] == '') :
+                pressure = None
+            else :
+                pressure = leitura['pressure']
+    
+            if (leitura['certificado'] == '') :
+                certificado = None
+            else :
+                certificado = leitura['certificado']
+
+            if (leitura['data_certificado'] == '') :
+                data_certificado = None
+            else :
+                data_certificado = leitura['data_certificado']
+
             post_fields = {
                 'temperature' : leitura['temperature'],
                 'humidity' : leitura['humidity'],
-                'pressure' : leitura['pressure'],
+                'pressure' : pressure,
                 'date' : leitura['date'],
-                'certificado': leitura['certificado'],
-                'data_certificado': leitura['data_certificado']
+                'certificado': certificado,
+                'data_certificado': data_certificado
             }
             request = Request(url, urlencode(post_fields).encode())
             request.add_header('X-API-KEY', api_key)
@@ -155,8 +170,8 @@ def query_sato(serialconfig):
         bytesize=serial.SEVENBITS,
         timeout = int(serialconfig['timeout'])
     )
-
     # le uma linha do termohigrometro
+    ser.readline()
     rcv_str = ser.readline()
     # fecha a conexao serial
     ser.close()
@@ -215,17 +230,14 @@ if __name__ == "__main__":
     import os
     from urllib.parse import urlencode
     from urllib.request import Request, urlopen  # requests http
-
     # o arquivo config.ini reune as configuracoes que podem ser alteradas
     config = configparser.ConfigParser()    # iniciar o objeto config
     config.read('/boot/datalogger.ini')             # ler o arquivo de configuracao     
 
     if (config['SensorConfig']['sensor'] == 'hygropalm') :
         import serial
-
     elif (config['SensorConfig']['sensor'] == 'sato') :
         import serial
-
     else :
         import pigpio		# acesso a interface GPIO
         # configuracao do sensor
@@ -235,13 +247,13 @@ if __name__ == "__main__":
         if not pi.connected:
             exit(0)
       
-            if (config['SensorConfig']['sensor'] == 'DHT22') :
-                import DHT22
-                s = DHT22.sensor(pi, 22)
+        if (config['SensorConfig']['sensor'] == 'DHT22') :
+            import DHT22
+            s = DHT22.sensor(pi, 22)
 
-            elif (config['SensorConfig']['sensor'] == 'BME280') :
-                import BME280
-                s = BME280.sensor(pi)
+        elif (config['SensorConfig']['sensor'] == 'BME280') :
+            import BME280
+            s = BME280.sensor(pi)
 
     
     # configuracao para acessar o REST Server
