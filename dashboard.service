@@ -2,8 +2,8 @@
 Description=Dashboard for TermHigrPi
 
 [Service]
-ExecStart=/home/pi/termhigrpirest/dashboard.py
-WorkingDirectory=/home/pi/termhigrpirest
+ExecStart=/home/pi/TermHigrPi/dashboard.py
+WorkingDirectory=/home/pi/TermHigrPi
 User=pi
 Restart=on-failure
 

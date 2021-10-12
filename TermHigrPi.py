@@ -126,29 +126,22 @@ def salvar_http(date, temperature, humidity, pressure, cal, url, api_key):
     try:
         d = open_buffer()
         for leitura in d:
-            if (leitura['pressure'] == '') :
-                pressure = None
-            else :
-                pressure = leitura['pressure']
-    
-            if (leitura['certificado'] == '') :
-                certificado = None
-            else :
-                certificado = leitura['certificado']
-
-            if (leitura['data_certificado'] == '') :
-                data_certificado = None
-            else :
-                data_certificado = leitura['data_certificado']
-
+            # campos obrigatorios
             post_fields = {
                 'temperature' : leitura['temperature'],
                 'humidity' : leitura['humidity'],
-                'pressure' : pressure,
                 'date' : leitura['date'],
-                'certificado': certificado,
-                'data_certificado': data_certificado
             }
+            # campos opcionais
+            if (leitura['pressure'] != '') :
+                post_fields['pressure'] = leitura['pressure']
+
+            if (leitura['certificado'] != '') :
+                post_fields['certificado'] = leitura['certificado']
+
+            if (leitura['data_certificado'] != '') :
+                post_fields['data_certificado'] = leitura['data_certificado']
+            
             request = Request(url, urlencode(post_fields).encode())
             request.add_header('X-API-KEY', api_key)
             # tenta enviar os dados via http 
