@@ -156,6 +156,34 @@ def salvar_http(date, temperature, humidity, pressure, cal, url, api_key):
         dberror_log(date)
     return
 
+def query_sato_old(serialconfig):
+    # configuracao da conexao serial
+    # adaptado para termohigrometro SATO
+    ser = serial.Serial(
+        port=serialconfig['port'],
+        baudrate=9600,
+        parity=serial.PARITY_NONE,
+        stopbits=serial.STOPBITS_ONE,
+        bytesize=serial.EIGHTBITS,
+        timeout = int(serialconfig['timeout'])
+    )
+    # le uma linha do termohigrometro
+    ser.readline()
+    rcv_str = ser.readline()
+    # fecha a conexao serial
+    ser.close()
+
+    # transformar o byte object recebido em uma string
+    dec_str = rcv_str.decode('utf-8')
+    # processa a string para extrair os valores de temperatura e umidade
+    data = dec_str.split()
+    temperature = float(data[1].replace(',',''))/10
+    humidity = float(data[2])/10
+    
+    data_array = [str(humidity), str(temperature)]
+    return data_array
+
+
 def query_sato(serialconfig):
     # configuracao da conexao serial
     # adaptado para termohigrometro SATO
@@ -235,6 +263,8 @@ if __name__ == "__main__":
         import serial
     elif (config['SensorConfig']['sensor'] == 'sato') :
         import serial
+    elif (config['SensorConfig']['sensor'] == 'sato_old') :
+        import serial
     else :
         import pigpio		# acesso a interface GPIO
         # configuracao do sensor
@@ -300,6 +330,8 @@ if __name__ == "__main__":
         else :                  # sensors comerciais interface serial
             if (config['SensorConfig']['sensor'] == 'sato') :
                 data_array = query_sato(config['SerialConfig'])
+            elif (config['SensorConfig']['sensor'] == 'sato_old') :
+                data_array = query_sato_old(config['SerialConfig'])
             else :
                 data_array = query_hygropalm(config['SerialConfig'])
                 
