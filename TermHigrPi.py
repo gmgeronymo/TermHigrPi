@@ -113,6 +113,10 @@ def salvar_sqlite(date,temperature,humidity,pressure=None):
 
 def salvar_http(date, temperature, humidity, pressure, cal, url, api_key):
 
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+
     if (cal) :
         # dados do certificado de calibracao do termohigrometro
         certificado = cal['Certificado']['certificado']
@@ -149,7 +153,7 @@ def salvar_http(date, temperature, humidity, pressure, cal, url, api_key):
             request = Request(url, urlencode(post_fields).encode())
             request.add_header('X-API-KEY', api_key)
             # tenta enviar os dados via http 
-            json = urlopen(request).read().decode()
+            json = urlopen(request, context=ctx).read().decode()
             # apaga o buffer
             open('write_buffer.txt','w').close()
     except:
@@ -253,6 +257,7 @@ if __name__ == "__main__":
     import csv          	# salvar dados antes de enviar ao DB
     import sqlite3      	# banco de dados local
     import os
+    import ssl
     from urllib.parse import urlencode
     from urllib.request import Request, urlopen  # requests http
     # o arquivo config.ini reune as configuracoes que podem ser alteradas
