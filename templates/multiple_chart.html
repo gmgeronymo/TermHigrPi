@@ -65,7 +65,7 @@
 			</div>
 		    </div>
 		</div>
-
+                {% if flag %}
 		<div class="row mt-2 mx-auto" id="card_pressure">
 		    <div class="card shadow-sm bg-light">
 			<div class="card-header"> Pressão Atmosférica </div>
@@ -76,7 +76,7 @@
 			</div>
 		    </div>
 		</div>
-
+                {% endif %}
 	    </div>
 	</div>
 
@@ -90,8 +90,8 @@
 
 	 var canvas_temp = document.getElementById("canvas_temp").getContext("2d");
 	 var canvas_hum = document.getElementById("canvas_hum").getContext("2d");
+         {% if flag %}
 	 var canvas_press = document.getElementById("canvas_press").getContext("2d");
-	 
 	 var data_press = {
 	     labels: [
 		 {% for item in labels %}
@@ -110,7 +110,7 @@
 		     {% endfor %}]
 	     }]
 	 };
-
+         {% endif %}
 	 var data_temp = {
 	     labels: [
 		 {% for item in labels %}
@@ -155,8 +155,9 @@
 	 
 	 new Chart.Line(canvas_temp, {data: data_temp, options: chart_options});
 	 new Chart.Line(canvas_hum, {data: data_hum, options: chart_options});
+         {% if flag %}
 	 new Chart.Line(canvas_press, {data: data_press, options: chart_options});
-
+         {% endif %}
 	</script>
 
 

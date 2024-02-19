@@ -2,8 +2,8 @@
 Description=Thermo Higrometer DHT-22 - BME280
 
 [Service]
-ExecStart=/home/pi/termhigrpirest/TermHigrPi.py
-WorkingDirectory=/home/pi/termhigrpirest
+ExecStart=/home/pi/TermHigrPi/TermHigrPi.py
+WorkingDirectory=/home/pi/TermHigrPi
 User=pi
 Restart=on-failure
 
